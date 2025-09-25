@@ -1,4 +1,6 @@
 body {
+  margin: 0;
+  color: #0b1220;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -9,8 +11,6 @@ body {
     Arial,
     Apple Color Emoji,
     Segoe UI Emoji;
-  margin: 0;
-  color: #0b1220;
 }
 
 .wrap {
@@ -19,19 +19,19 @@ body {
 }
 
 h1 {
-  font-size: 16px;
   margin: 0 0 8px 0;
+  font-size: 16px;
 }
 
 h2 {
-  font-size: 14px;
   margin: 12px 0 8px 0;
+  font-size: 14px;
 }
 
 .field {
   display: grid;
-  gap: 6px;
   margin-bottom: 8px;
+  gap: 6px;
 }
 
 label {
@@ -43,6 +43,7 @@ input[type="text"] {
   border: 1px solid #d0d7e2;
   border-radius: 8px;
   font-size: 13px;
+  text-transform: uppercase;
 }
 
 .row {
@@ -57,17 +58,17 @@ input[type="text"] {
 }
 
 .actions {
-  margin-top: 8px;
   display: flex;
+  margin-top: 8px;
   gap: 8px;
 }
 
 button {
-  background: #4f46e5;
-  border: none;
-  color: #fff;
   padding: 8px 12px;
+  border: none;
   border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
   font-size: 12px;
   cursor: pointer;
 }
@@ -78,30 +79,30 @@ button#clear {
 
 .history {
   display: grid;
-  gap: 8px;
   max-height: 200px;
-  overflow: auto;
-  border: 1px solid #eef2f8;
   padding: 8px;
+  overflow: auto;
+  gap: 8px;
+  border: 1px solid #eef2f8;
   border-radius: 8px;
   background: #fafbff;
 }
 
 .item {
-  background: #fff;
+  display: grid;
+  padding: 8px;
+  gap: 6px;
   border: 1px solid #e6ecf5;
   border-radius: 8px;
-  padding: 8px;
-  display: grid;
-  gap: 6px;
+  background: #fff;
 }
 
 .meta {
-  font-size: 11px;
-  color: #5b6475;
   display: flex;
   justify-content: space-between;
   gap: 6px;
+  color: #5b6475;
+  font-size: 11px;
 }
 
 .text {
@@ -110,11 +111,11 @@ button#clear {
 }
 
 .hint {
-  font-size: 12px;
   margin-top: 10px;
+  font-size: 12px;
 }
 
 .small {
-  font-size: 11px;
   color: #666;
+  font-size: 11px;
 }
