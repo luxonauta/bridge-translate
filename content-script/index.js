@@ -6,7 +6,8 @@ let isTranslating = false;
 let debounceTimer = null;
 
 const commonStyles = {
-  fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
+  fontFamily:
+    "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
   background: "rgba(20,20,20,0.96)",
   color: "#fff",
   borderRadius: "8px",
@@ -27,7 +28,10 @@ function isEditable(el) {
 
   if (tag === "input") {
     const type = el.getAttribute("type") || "text";
-    return ["text", "search", "email", "url", "tel", "password"].includes(type) || !type;
+    return (
+      ["text", "search", "email", "url", "tel", "password"].includes(type) ||
+      !type
+    );
   }
 
   if (tag === "textarea") return true;
@@ -39,11 +43,11 @@ function isEditable(el) {
 
 function getDeepActiveElement(root = document) {
   let el = root.activeElement || null;
-  
+
   while (el && el.shadowRoot && el.shadowRoot.activeElement) {
     el = el.shadowRoot.activeElement;
   }
-  
+
   return el;
 }
 
@@ -57,7 +61,10 @@ function getFieldTextAndCommand(el) {
 
   let value = "";
 
-  if (el.tagName?.toLowerCase() === "input" || el.tagName?.toLowerCase() === "textarea") {
+  if (
+    el.tagName?.toLowerCase() === "input" ||
+    el.tagName?.toLowerCase() === "textarea"
+  ) {
     value = el.value;
   } else if (el.isContentEditable) {
     value = el.innerText;
@@ -74,7 +81,10 @@ function getFieldTextAndCommand(el) {
 }
 
 function setFieldText(el, newText) {
-  if (el.tagName?.toLowerCase() === "input" || el.tagName?.toLowerCase() === "textarea") {
+  if (
+    el.tagName?.toLowerCase() === "input" ||
+    el.tagName?.toLowerCase() === "textarea"
+  ) {
     el.value = newText;
     el.dispatchEvent(new Event("input", { bubbles: true }));
     return;
@@ -90,7 +100,7 @@ function setFieldText(el, newText) {
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
-    
+
     return;
   }
 }
@@ -230,13 +240,25 @@ function buildModalUi() {
     shadow.host.remove();
   }
 
-  return { original, translated, confirmBtn, cancelBtn, showLoading, destroy, shadowRoot: shadow };
+  return {
+    original,
+    translated,
+    confirmBtn,
+    cancelBtn,
+    showLoading,
+    destroy,
+    shadowRoot: shadow
+  };
 }
 
 async function getSettings() {
   const res = await chrome.runtime.sendMessage({ type: "get-settings" });
   if (res?.ok) return res.settings;
-  return { nativeLanguageCode: "pt", preferNativeAsSource: true, showConfirmModal: true };
+  return {
+    nativeLanguageCode: "pt",
+    preferNativeAsSource: true,
+    showConfirmModal: true
+  };
 }
 
 async function requestTranslation(payload) {
@@ -248,7 +270,10 @@ function removeCommandSuffix(el) {
 
   let value = "";
 
-  if (el.tagName?.toLowerCase() === "input" || el.tagName?.toLowerCase() === "textarea") {
+  if (
+    el.tagName?.toLowerCase() === "input" ||
+    el.tagName?.toLowerCase() === "textarea"
+  ) {
     value = el.value;
     value = value.replace(COMMAND_REGEX, "").trimEnd();
     el.value = value;
@@ -290,7 +315,7 @@ function onUserInput() {
   const el = getActiveEditable();
 
   if (!el) return;
-  
+
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => tryTriggerTranslation(el), 500);
 }
@@ -340,7 +365,8 @@ async function handleTranslateAuto(el, parsed) {
       return;
     }
 
-    const translated = res.result && res.result.translation ? res.result.translation : "";
+    const translated =
+      res.result && res.result.translation ? res.result.translation : "";
     ui.translated.textContent = translated;
     ui.showLoading(false);
 
@@ -355,7 +381,7 @@ async function handleTranslateAuto(el, parsed) {
 
     ui.confirmBtn.addEventListener("click", confirm);
     ui.cancelBtn.addEventListener("click", cancel);
-    ui.shadowRoot.addEventListener("keydown", ev => {
+    ui.shadowRoot.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter") confirm();
       if (ev.key === "Escape") cancel();
     });

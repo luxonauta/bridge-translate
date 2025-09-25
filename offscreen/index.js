@@ -6,7 +6,10 @@ async function getAvailabilityForPair(sourceLanguage, targetLanguage) {
   if (!("Translator" in self)) return "unsupported";
 
   try {
-    const status = await Translator.availability({ sourceLanguage, targetLanguage });
+    const status = await Translator.availability({
+      sourceLanguage,
+      targetLanguage
+    });
     return status;
   } catch {
     return "unsupported";
@@ -35,8 +38,8 @@ async function ensureDetector() {
       detector = await LanguageDetector.create();
       return detector;
     }
-  } catch { }
-  
+  } catch {}
+
   return null;
 }
 
@@ -51,12 +54,17 @@ async function detectLanguage(text) {
     if (Array.isArray(results) && results.length > 0) {
       return results[0].detectedLanguage;
     }
-  } catch { }
-  
+  } catch {}
+
   return null;
 }
 
-async function runTranslation(text, requestedSource, requestedTarget, preferNativeAsSource) {
+async function runTranslation(
+  text,
+  requestedSource,
+  requestedTarget,
+  preferNativeAsSource
+) {
   const target = normalizeLanguageToCode(requestedTarget);
 
   if (!target) return { ok: false, error: "Invalid target language" };
@@ -64,7 +72,8 @@ async function runTranslation(text, requestedSource, requestedTarget, preferNati
   let source = normalizeLanguageToCode(requestedSource);
   if (!source) source = null;
 
-  if (!("Translator" in self)) return { ok: false, error: "Translator API not supported" };
+  if (!("Translator" in self))
+    return { ok: false, error: "Translator API not supported" };
 
   let finalSource = source;
 
@@ -76,7 +85,11 @@ async function runTranslation(text, requestedSource, requestedTarget, preferNati
   const pairSource = finalSource === "auto" ? undefined : finalSource;
   const availability = await getAvailabilityForPair(pairSource || "en", target);
 
-  if (availability === "unsupported") return { ok: false, error: "Language pair unsupported or model unavailable" };
+  if (availability === "unsupported")
+    return {
+      ok: false,
+      error: "Language pair unsupported or model unavailable"
+    };
 
   try {
     const translator = await Translator.create({
@@ -89,20 +102,36 @@ async function runTranslation(text, requestedSource, requestedTarget, preferNati
 
     const translated = await translator.translate(text);
 
-    return { ok: true, translation: translated, sourceLanguage: finalSource || "auto", targetLanguage: target };
+    return {
+      ok: true,
+      translation: translated,
+      sourceLanguage: finalSource || "auto",
+      targetLanguage: target
+    };
   } catch (e) {
-    return { ok: false, error: String(e?.message || e || "Translation failed") };
+    return {
+      ok: false,
+      error: String(e?.message || e || "Translation failed")
+    };
   }
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "offscreen-translate") {
-    const { text, nativeLanguageCode, targetLanguage, preferNativeAsSource } = message.payload || {};
+    const { text, nativeLanguageCode, targetLanguage, preferNativeAsSource } =
+      message.payload || {};
 
-    runTranslation(text, nativeLanguageCode, targetLanguage, preferNativeAsSource)
-      .then(r => sendResponse(r))
-      .catch(err => sendResponse({ ok: false, error: String(err?.message || err) }));
-    
+    runTranslation(
+      text,
+      nativeLanguageCode,
+      targetLanguage,
+      preferNativeAsSource
+    )
+      .then((r) => sendResponse(r))
+      .catch((err) =>
+        sendResponse({ ok: false, error: String(err?.message || err) })
+      );
+
     return true;
   }
 

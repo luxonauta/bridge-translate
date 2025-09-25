@@ -4,20 +4,30 @@ const SETTINGS_KEY = "translatorSettings";
 
 async function ensureOffscreen() {
   const contexts = await chrome.runtime.getContexts({});
-  const hasOffscreen = contexts.some(c => c.contextType === "OFFSCREEN_DOCUMENT" && c.documentUrl === OFFSCREEN_URL);
+  const hasOffscreen = contexts.some(
+    (c) =>
+      c.contextType === "OFFSCREEN_DOCUMENT" && c.documentUrl === OFFSCREEN_URL
+  );
 
   if (!hasOffscreen) {
     await chrome.offscreen.createDocument({
       url: "offscreen/index.html",
       reasons: ["IFRAME_SCRIPTING"],
-      justification: "Use built-in Translator and LanguageDetector APIs in a windowed context."
+      justification:
+        "Use built-in Translator and LanguageDetector APIs in a windowed context."
     });
   }
 }
 
 async function readSettings() {
   const { translatorSettings } = await chrome.storage.local.get(SETTINGS_KEY);
-  return translatorSettings || { nativeLanguageCode: "pt", preferNativeAsSource: true, showConfirmModal: true };
+  return (
+    translatorSettings || {
+      nativeLanguageCode: "pt",
+      preferNativeAsSource: true,
+      showConfirmModal: true
+    }
+  );
 }
 
 async function writeSettings(next) {
@@ -28,7 +38,10 @@ async function writeSettings(next) {
 async function appendHistory(entry) {
   const { translationHistory } = await chrome.storage.local.get(HISTORY_KEY);
   const list = Array.isArray(translationHistory) ? translationHistory : [];
-  const next = [{ ...entry, id: crypto.randomUUID(), createdAt: Date.now() }, ...list].slice(0, 10);
+  const next = [
+    { ...entry, id: crypto.randomUUID(), createdAt: Date.now() },
+    ...list
+  ].slice(0, 10);
 
   await chrome.storage.local.set({ [HISTORY_KEY]: next });
 
@@ -47,29 +60,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message?.type === "get-settings") {
-    readSettings().then(s => sendResponse({ ok: true, settings: s }));
+    readSettings().then((s) => sendResponse({ ok: true, settings: s }));
     return true;
   }
 
   if (message?.type === "set-settings") {
-    writeSettings(message.settings).then(s => sendResponse({ ok: true, settings: s }));
+    writeSettings(message.settings).then((s) =>
+      sendResponse({ ok: true, settings: s })
+    );
     return true;
   }
 
   if (message?.type === "get-history") {
-    getHistory().then(h => sendResponse({ ok: true, history: h }));
+    getHistory().then((h) => sendResponse({ ok: true, history: h }));
     return true;
   }
 
   if (message?.type === "clear-history") {
-    chrome.storage.local.set({ [HISTORY_KEY]: [] }).then(() => sendResponse({ ok: true }));
+    chrome.storage.local
+      .set({ [HISTORY_KEY]: [] })
+      .then(() => sendResponse({ ok: true }));
     return true;
   }
 
   if (message?.type === "translate") {
     ensureOffscreen().then(() => {
-      chrome.runtime.sendMessage({ type: "offscreen-translate", payload: message.payload })
-        .then(result => {
+      chrome.runtime
+        .sendMessage({ type: "offscreen-translate", payload: message.payload })
+        .then((result) => {
           if (result?.ok) {
             appendHistory({
               originalText: message.payload.text,
@@ -80,12 +98,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               title: sender?.tab?.title || ""
             }).then(() => sendResponse({ ok: true, result }));
           } else {
-            sendResponse({ ok: false, error: result?.error || "Unknown error" });
+            sendResponse({
+              ok: false,
+              error: result?.error || "Unknown error"
+            });
           }
         })
-        .catch(err => sendResponse({ ok: false, error: String(err?.message || err) }));
+        .catch((err) =>
+          sendResponse({ ok: false, error: String(err?.message || err) })
+        );
     });
-    
+
     return true;
   }
 });

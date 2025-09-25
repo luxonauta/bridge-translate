@@ -18,7 +18,8 @@ async function loadSettings() {
   if (res?.ok) {
     nativeInput.value = res.settings.nativeLanguageCode || "pt";
     preferNative.checked = res.settings.preferNativeAsSource !== false;
-    confirmModal.checked = res.settings.showConfirmModal !== false ? true : false;
+    confirmModal.checked =
+      res.settings.showConfirmModal !== false ? true : false;
   } else {
     nativeInput.value = "pt";
     preferNative.checked = true;
@@ -35,7 +36,10 @@ async function saveSettings() {
     showConfirmModal: confirmModal.checked
   };
 
-  const res = await chrome.runtime.sendMessage({ type: "set-settings", settings });
+  const res = await chrome.runtime.sendMessage({
+    type: "set-settings",
+    settings
+  });
 
   if (res?.ok) {
     saveBtn.textContent = "Saved";
