@@ -1,0 +1,39 @@
+{
+  "name": "Bridge Translate",
+  "description": "🌍 Chrome extension for instant AI-powered translation on input.",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_title": "Bridge Translate"
+  },
+  "permissions": [
+    "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/index.js",
+    "type": "module"
+  },
+  "content_scripts": [
+  {
+    "matches": ["<all_urls>"],
+    "js": ["content-script/index.js"],
+    "run_at": "document_idle",
+    "all_frames": true
+  }
+],
+  "web_accessible_resources": [
+  {
+    "resources": [
+      "common/language-map.js",
+      "offscreen/index.html",
+      "offscreen/index.js"
+    ],
+    "matches": ["<all_urls>"]
+  }
+]
+}

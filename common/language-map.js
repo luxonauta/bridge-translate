@@ -1,0 +1,91 @@
+export const languageSynonymsToBcp47 = {
+  english: "en",
+  inglês: "en",
+  ingles: "en",
+  spanish: "es",
+  espanhol: "es",
+  espanol: "es",
+  francés: "fr",
+  frances: "fr",
+  french: "fr",
+  german: "de",
+  alemão: "de",
+  alemao: "de",
+  portuguese: "pt",
+  português: "pt",
+  portugues: "pt",
+  italian: "it",
+  italiano: "it",
+  japanese: "ja",
+  japonês: "ja",
+  japones: "ja",
+  chinese: "zh",
+  chinês: "zh",
+  chines: "zh",
+  "chinese simplified": "zh-CN",
+  "chinese traditional": "zh-TW",
+  korean: "ko",
+  coreano: "ko",
+  russian: "ru",
+  russo: "ru",
+  arabic: "ar",
+  árabe: "ar",
+  arabe: "ar",
+  hindi: "hi",
+  híndi: "hi",
+  hindií: "hi",
+  dutch: "nl",
+  neerlandês: "nl",
+  neerlandes: "nl",
+  turkish: "tr",
+  turco: "tr",
+  polish: "pl",
+  polonês: "pl",
+  polones: "pl",
+  vietnamese: "vi",
+  vietnamita: "vi",
+  hebrew: "he",
+  hebraico: "he",
+  indonesian: "id",
+  indonésio: "id",
+  indonesio: "id",
+  thai: "th",
+  tailandês: "th",
+  tailandes: "th",
+  swedish: "sv",
+  sueco: "sv",
+  norwegian: "no",
+  norueguês: "no",
+  noruegues: "no",
+  danish: "da",
+  dinamarquês: "da",
+  dinamarques: "da",
+  finnish: "fi",
+  finlandês: "fi",
+  finlandes: "fi",
+  czech: "cs",
+  tcheco: "cs",
+  greek: "el",
+  grego: "el",
+  romanian: "ro",
+  romeno: "ro",
+  ukrainian: "uk",
+  ucraniano: "uk",
+  hungarian: "hu",
+  húngaro: "hu",
+  hungaro: "hu"
+};
+
+export function normalizeLanguageToCode(input) {
+  if (!input) return null;
+
+  const key = String(input).trim().toLowerCase();
+
+  if (languageSynonymsToBcp47[key]) return languageSynonymsToBcp47[key];
+
+  const alpha = key.replace(/_/g, "-");
+
+  if (/^[a-z]{2,3}(-[a-z0-9-]+)?$/i.test(alpha)) return alpha;
+
+  return null;
+}
