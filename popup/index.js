@@ -42,8 +42,8 @@ async function saveSettings() {
   });
 
   if (res?.ok) {
-    saveBtn.textContent = "Saved";
-    setTimeout(() => (saveBtn.textContent = "Save"), 1000);
+    saveBtn.textContent = "✅ Saved";
+    setTimeout(() => (saveBtn.textContent = "Save preferences"), 1800);
   }
 }
 
@@ -51,34 +51,45 @@ function renderHistory(items) {
   historyEl.innerHTML = "";
 
   if (!Array.isArray(items) || items.length === 0) {
-    historyEl.innerHTML = "<div class='small'>No translations yet</div>";
+    historyEl.innerHTML =
+      "<div class='item'><p>🙈 No translations yet.</p></div>";
     return;
   }
 
   for (const it of items) {
     const div = document.createElement("div");
     div.className = "item";
-    const meta = document.createElement("div");
+
+    const meta = document.createElement("p");
     meta.className = "meta";
-    const left = document.createElement("div");
+
+    const left = document.createElement("span");
     left.textContent = `${it.sourceLanguage} → ${it.targetLanguage}`;
-    const right = document.createElement("div");
+    const right = document.createElement("span");
     right.textContent = fmtTime(it.createdAt);
+
     meta.appendChild(left);
     meta.appendChild(right);
-    const original = document.createElement("div");
+
+    const translation = document.createElement("p");
+    translation.className = "translation";
+
+    const original = document.createElement("span");
     original.className = "text";
     original.textContent = it.originalText;
-    const arrow = document.createElement("div");
-    arrow.className = "text";
-    arrow.textContent = "↓";
-    const translated = document.createElement("div");
-    translated.className = "text";
+
+    const arrow = document.createElement("span");
+    arrow.textContent = " → ";
+
+    const translated = document.createElement("span");
     translated.textContent = it.translatedText;
+
+    translation.appendChild(original);
+    translation.appendChild(arrow);
+    translation.appendChild(translated);
+
     div.appendChild(meta);
-    div.appendChild(original);
-    div.appendChild(arrow);
-    div.appendChild(translated);
+    div.appendChild(translation);
     historyEl.appendChild(div);
   }
 }
@@ -95,5 +106,6 @@ async function clearHistory() {
 
 saveBtn.addEventListener("click", saveSettings);
 clearBtn.addEventListener("click", clearHistory);
+
 loadSettings();
 loadHistory();

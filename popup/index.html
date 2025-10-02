@@ -3,34 +3,38 @@
   <head>
     <meta charset="utf-8" />
     <title>Bridge Translate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="🌁 Chrome extension for instant AI-powered translation on input."
+    />
     <link rel="stylesheet" href="./index.css" />
   </head>
 
   <body>
     <div class="wrap">
-      <h1>Bridge Translate</h1>
+      <div class="row gapless">
+        <h1>🌁 Bridge Translate</h1>
+        <p>Instant AI-powered translation on input.</p>
+      </div>
 
       <div class="field">
-        <label for="native">Native language (BCP 47)</label>
-        <input id="native" type="text" placeholder="pt, en, es, zh-CN" />
+        <label for="native">Native language (<code>BCP 47</code>):</label>
+        <input id="native" type="text" placeholder="PT, EN, ES, ZH-CN" />
       </div>
 
       <div class="row">
         <label class="check">
           <input id="prefer-native" type="checkbox" checked />
-          <span>Prefer native language as source</span>
+          <span>Prefer native language as source.</span>
         </label>
-      </div>
-
-      <div class="row">
         <label class="check">
           <input id="confirm-modal" type="checkbox" checked />
-          <span>Show confirmation modal</span>
+          <span>Show confirmation modal.</span>
         </label>
       </div>
-
       <div class="actions">
-        <button id="save">Save</button>
+        <button id="save" class="prim">Save preferences</button>
       </div>
 
       <h2>Last translations</h2>
@@ -40,13 +44,16 @@
       </div>
 
       <p class="hint">
-        Type your text then add <b>--t: [language]</b>. The translation will be
-        proposed automatically. Example: <i>Olá mundo! --t: english</i>
+        Type your text then add: <code>--t: [language]</code>. The translation
+        will be proposed automatically.
+        <br />
+        <b>Example:</b> <code>Olá mundo! --t: english</code>
       </p>
-
-      <p class="small">
-        Requires Chrome desktop with built-in AI APIs enabled. Model may
-        download on first use.
+      <p>
+        <em>
+          Requires Chrome desktop with AI APIs enabled; the model will download
+          on first use if needed.
+        </em>
       </p>
     </div>
 
