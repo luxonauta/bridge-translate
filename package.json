@@ -1,8 +1,11 @@
 {
   "name": "bridge-translate",
   "version": "1.0.0",
-  "description": "🌍 Chrome extension for instant AI-powered translation on input.",
-  "author": "Lucas de França",
+  "description": "🌁 Chrome extension for instant AI-powered translation on input.",
+  "author": {
+    "name": "Lucas de França",
+    "email": "me@luxonauta.com"
+  },
   "license": "MIT",
   "private": false,
   "repository": {
