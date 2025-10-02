@@ -4,6 +4,5 @@
   "trailingComma": "none",
   "plugins": ["prettier-plugin-css-order"],
   "cssDeclarationSorterKeepOverrides": true,
-  "cssDeclarationSorterOrder": "smacss",
-  "ignorePatterns": ["node_modules", "dist", "build"]
+  "cssDeclarationSorterOrder": "smacss"
 }
