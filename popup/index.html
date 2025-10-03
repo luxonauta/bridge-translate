@@ -8,47 +8,50 @@
       name="description"
       content="🌁 Chrome extension for instant AI-powered translation on input."
     />
-    <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="../styles/popup.css" />
   </head>
 
   <body>
-    <div class="wrap">
-      <div class="row gapless">
-        <h1>🌁 Bridge Translate</h1>
+    <div class="bt-wrap">
+      <div class="bt-row bt-gapless">
+        <h1>Bridge Translate</h1>
         <p>Instant AI-powered translation on input.</p>
       </div>
 
-      <div class="field">
+      <div class="bt-field">
         <label for="native">Native language (<code>BCP 47</code>):</label>
         <input id="native" type="text" placeholder="PT, EN, ES, ZH-CN" />
       </div>
 
-      <div class="row">
-        <label class="check">
+      <div class="bt-row">
+        <label class="bt-check">
           <input id="prefer-native" type="checkbox" checked />
           <span>Prefer native language as source.</span>
         </label>
-        <label class="check">
+        <label class="bt-check">
           <input id="confirm-modal" type="checkbox" checked />
           <span>Show confirmation modal.</span>
         </label>
       </div>
-      <div class="actions">
-        <button id="save" class="prim">Save preferences</button>
+
+      <div class="bt-actions">
+        <button id="save" class="bt-button">Save preferences</button>
       </div>
 
       <h2>Last translations</h2>
-      <div id="history" class="history"></div>
-      <div class="actions">
-        <button id="clear">Clear history</button>
+      <div id="history" class="bt-history"></div>
+
+      <div class="bt-actions">
+        <button id="clear" class="bt-button">Clear history</button>
       </div>
 
-      <p class="hint">
+      <p class="bt-hint">
         Type your text then add: <code>--t: [language]</code>. The translation
         will be proposed automatically.
         <br />
         <b>Example:</b> <code>Olá mundo! --t: english</code>
       </p>
+
       <p>
         <em>
           Requires Chrome desktop with AI APIs enabled; the model will download

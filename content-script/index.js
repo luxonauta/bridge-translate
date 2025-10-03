@@ -1,33 +1,43 @@
 let normalizeLanguageToCode;
 
-const COMMAND_REGEX = /--t:\s*([a-zA-ZÀ-ÿ\- ]+)$/i;
+const TRANSLATION_COMMAND_PATTERN = /--t:\s*([a-zA-ZÀ-ÿ\- ]+)$/i;
 
 let isTranslating = false;
 let debounceTimer = null;
 
 const commonStyles = {
-  fontFamily:
-    "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
-  background: "rgba(20,20,20,0.96)",
-  color: "#fff",
-  borderRadius: "8px",
-  boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
-  zIndex: "2147483647"
+  fontFamily: "system-ui, sans-serif",
+  background: "#FFFF",
+  color: "#1C2024",
+  borderRadius: "0.375rem",
+  boxShadow: "0 .375rem 1.5rem #0000000f",
+  zIndex: "9999999999"
 };
 
 (async function bootstrap() {
   const mod = await import(chrome.runtime.getURL("common/language-map.js"));
   normalizeLanguageToCode = mod.normalizeLanguageToCode;
-  attachAutoDetector();
+  injectGlobalStylesheet();
+  registerAutoDetection();
 })();
 
-function isEditable(el) {
-  if (!el) return false;
+function injectGlobalStylesheet() {
+  const href = chrome.runtime.getURL("styles/dialogs.css");
+  if (![...document.styleSheets].some((s) => s.href === href)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+}
 
-  const tag = el.tagName?.toLowerCase();
+function isEditableElement(element) {
+  if (!element) return false;
+
+  const tag = element.tagName?.toLowerCase();
 
   if (tag === "input") {
-    const type = el.getAttribute("type") || "text";
+    const type = element.getAttribute("type") || "text";
     return (
       ["text", "search", "email", "url", "tel", "password"].includes(type) ||
       !type
@@ -35,81 +45,66 @@ function isEditable(el) {
   }
 
   if (tag === "textarea") return true;
-
-  if (el.isContentEditable) return true;
+  if (element.isContentEditable) return true;
 
   return false;
 }
 
 function getDeepActiveElement(root = document) {
-  let el = root.activeElement || null;
-
-  while (el && el.shadowRoot && el.shadowRoot.activeElement) {
-    el = el.shadowRoot.activeElement;
+  let element = root.activeElement || null;
+  while (element && element.shadowRoot && element.shadowRoot.activeElement) {
+    element = element.shadowRoot.activeElement;
   }
-
-  return el;
+  return element;
 }
 
-function getActiveEditable() {
-  const el = getDeepActiveElement();
-  return isEditable(el) ? el : null;
+function getActiveEditableElement() {
+  const element = getDeepActiveElement();
+  return isEditableElement(element) ? element : null;
 }
 
-function getFieldTextAndCommand(el) {
-  if (!el) return null;
+function parseFieldTextAndCommand(element) {
+  if (!element) return null;
 
   let value = "";
+  const tag = element.tagName?.toLowerCase();
 
-  if (
-    el.tagName?.toLowerCase() === "input" ||
-    el.tagName?.toLowerCase() === "textarea"
-  ) {
-    value = el.value;
-  } else if (el.isContentEditable) {
-    value = el.innerText;
+  if (tag === "input" || tag === "textarea") {
+    value = element.value;
+  } else if (element.isContentEditable) {
+    value = element.innerText;
   }
 
-  const match = value.match(COMMAND_REGEX);
-
+  const match = value.match(TRANSLATION_COMMAND_PATTERN);
   if (!match) return null;
 
   const languageRaw = match[1];
   const precedingText = value.slice(0, match.index).trimEnd();
-
   return { text: precedingText, languageRaw };
 }
 
-function setFieldText(el, newText) {
-  if (
-    el.tagName?.toLowerCase() === "input" ||
-    el.tagName?.toLowerCase() === "textarea"
-  ) {
-    el.value = newText;
-    el.dispatchEvent(new Event("input", { bubbles: true }));
+function setFieldText(element, newText) {
+  const tag = element.tagName?.toLowerCase();
+
+  if (tag === "input" || tag === "textarea") {
+    element.value = newText;
+    element.dispatchEvent(new Event("input", { bubbles: true }));
     return;
   }
 
-  if (el.isContentEditable) {
-    el.textContent = newText;
-
+  if (element.isContentEditable) {
+    element.textContent = newText;
     const range = document.createRange();
-    range.selectNodeContents(el);
+    range.selectNodeContents(element);
     range.collapse(false);
-
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
     return;
   }
 }
 
-function applyCommonStyles(element) {
-  Object.assign(element.style, commonStyles);
-}
-
-function createShadowRootHost() {
+function createOverlayShadowHost() {
   const host = document.createElement("div");
   host.style.all = "initial";
   host.style.position = "fixed";
@@ -120,134 +115,90 @@ function createShadowRootHost() {
   return host.attachShadow({ mode: "closed" });
 }
 
-function buildModalUi() {
-  const shadow = createShadowRootHost();
+function attachStylesheetToShadowRoot(shadowRoot) {
+  const href = chrome.runtime.getURL("styles/dialogs.css");
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = href;
+  shadowRoot.appendChild(link);
+}
 
-  const wrapper = document.createElement("div");
-  wrapper.style.position = "fixed";
-  wrapper.style.inset = "0";
-  wrapper.style.display = "flex";
-  wrapper.style.alignItems = "flex-end";
-  wrapper.style.justifyContent = "center";
-  wrapper.style.pointerEvents = "none";
+function buildConfirmationDialog() {
+  const shadowRoot = createOverlayShadowHost();
+  attachStylesheetToShadowRoot(shadowRoot);
+
+  const container = document.createElement("div");
+  container.className = "bt-dialog-overlay";
 
   const panel = document.createElement("div");
-  panel.style.pointerEvents = "auto";
-  panel.style.minWidth = "320px";
-  panel.style.maxWidth = "640px";
-  panel.style.margin = "16px";
-  panel.style.borderRadius = "12px";
-  panel.style.boxShadow = "0 8px 24px rgba(0,0,0,0.2)";
-  panel.style.padding = "16px";
-  panel.style.backdropFilter = "saturate(1.2) blur(8px)";
-  applyCommonStyles(panel);
+  panel.className = "bt-dialog";
 
   const title = document.createElement("div");
+  title.className = "bt-title";
   title.textContent = "Confirm Translation";
-  title.style.fontSize = "14px";
-  title.style.fontWeight = "600";
-  title.style.marginBottom = "8px";
-  title.style.opacity = "0.9";
 
-  const box = document.createElement("div");
-  box.style.display = "grid";
-  box.style.gridTemplateColumns = "1fr";
-  box.style.gap = "8px";
+  const content = document.createElement("div");
+  content.className = "bt-content";
 
-  const original = document.createElement("div");
-  original.style.fontSize = "13px";
-  original.style.lineHeight = "1.4";
-  original.style.padding = "10px";
-  original.style.borderRadius = "8px";
-  original.style.background = "rgba(255,255,255,0.06)";
+  const sourceText = document.createElement("div");
+  sourceText.className = "bt-source-text";
 
-  const arrow = document.createElement("div");
-  arrow.textContent = "↓";
-  arrow.style.textAlign = "center";
-  arrow.style.opacity = "0.7";
+  const directionIndicator = document.createElement("div");
+  directionIndicator.className = "bt-indicator";
+  directionIndicator.textContent = "↓";
 
-  const translated = document.createElement("div");
-  translated.style.fontSize = "13px";
-  translated.style.lineHeight = "1.4";
-  translated.style.padding = "10px";
-  translated.style.borderRadius = "8px";
-  translated.style.background = "rgba(255,255,255,0.1)";
+  const translatedText = document.createElement("div");
+  translatedText.className = "bt-translated-text";
 
   const footer = document.createElement("div");
-  footer.style.display = "flex";
-  footer.style.gap = "8px";
-  footer.style.justifyContent = "flex-end";
-  footer.style.marginTop = "10px";
+  footer.className = "bt-actions";
 
-  const cancelBtn = document.createElement("button");
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.style.background = "transparent";
-  cancelBtn.style.border = "1px solid rgba(255,255,255,0.2)";
-  cancelBtn.style.color = "#fff";
-  cancelBtn.style.padding = "8px 12px";
-  cancelBtn.style.borderRadius = "8px";
-  cancelBtn.style.cursor = "pointer";
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "bt-button bt-cancel";
+  cancelButton.textContent = "Cancel";
 
-  const confirmBtn = document.createElement("button");
-  confirmBtn.textContent = "Replace";
-  confirmBtn.style.background = "#4f46e5";
-  confirmBtn.style.border = "none";
-  confirmBtn.style.color = "#fff";
-  confirmBtn.style.padding = "8px 12px";
-  confirmBtn.style.borderRadius = "8px";
-  confirmBtn.style.cursor = "pointer";
+  const confirmButton = document.createElement("button");
+  confirmButton.className = "bt-button bt-confirm";
+  confirmButton.textContent = "Replace";
 
   const loading = document.createElement("div");
-  loading.style.display = "none";
-  loading.style.justifyContent = "center";
-  loading.style.alignItems = "center";
-  loading.style.gap = "8px";
-  loading.style.marginBottom = "8px";
+  loading.className = "bt-loading";
 
   const spinner = document.createElement("div");
-  spinner.style.width = "16px";
-  spinner.style.height = "16px";
-  spinner.style.border = "2px solid rgba(255,255,255,0.25)";
-  spinner.style.borderTopColor = "#fff";
-  spinner.style.borderRadius = "50%";
-  spinner.style.animation = "spin 0.9s linear infinite";
-
-  const style = document.createElement("style");
-  style.textContent = "@keyframes spin{to{transform:rotate(360deg)}}";
+  spinner.className = "bt-loading-spinner";
 
   loading.appendChild(spinner);
   loading.appendChild(document.createTextNode("Translating..."));
 
-  box.appendChild(original);
-  box.appendChild(arrow);
-  box.appendChild(translated);
-  footer.appendChild(cancelBtn);
-  footer.appendChild(confirmBtn);
-  panel.appendChild(style);
+  content.appendChild(sourceText);
+  content.appendChild(directionIndicator);
+  content.appendChild(translatedText);
+  footer.appendChild(cancelButton);
+  footer.appendChild(confirmButton);
   panel.appendChild(title);
   panel.appendChild(loading);
-  panel.appendChild(box);
+  panel.appendChild(content);
   panel.appendChild(footer);
-  wrapper.appendChild(panel);
-  shadow.appendChild(wrapper);
+  container.appendChild(panel);
+  shadowRoot.appendChild(container);
 
-  function showLoading(v) {
-    loading.style.display = v ? "flex" : "none";
-    box.style.opacity = v ? "0.6" : "1";
+  function setLoadingVisible(visible) {
+    loading.style.display = visible ? "flex" : "none";
+    content.style.opacity = visible ? "0.6" : "1";
   }
 
   function destroy() {
-    shadow.host.remove();
+    shadowRoot.host.remove();
   }
 
   return {
-    original,
-    translated,
-    confirmBtn,
-    cancelBtn,
-    showLoading,
+    sourceText,
+    translatedText,
+    confirmButton,
+    cancelButton,
+    setLoadingVisible,
     destroy,
-    shadowRoot: shadow
+    shadowRoot
   };
 }
 
@@ -265,72 +216,58 @@ async function requestTranslation(payload) {
   return chrome.runtime.sendMessage({ type: "translate", payload });
 }
 
-function removeCommandSuffix(el) {
-  if (!el) return;
+function removeTranslationCommandSuffix(element) {
+  if (!element) return "";
 
   let value = "";
+  const tag = element.tagName?.toLowerCase();
 
-  if (
-    el.tagName?.toLowerCase() === "input" ||
-    el.tagName?.toLowerCase() === "textarea"
-  ) {
-    value = el.value;
-    value = value.replace(COMMAND_REGEX, "").trimEnd();
-    el.value = value;
-    el.dispatchEvent(new Event("input", { bubbles: true }));
+  if (tag === "input" || tag === "textarea") {
+    value = element.value;
+    value = value.replace(TRANSLATION_COMMAND_PATTERN, "").trimEnd();
+    element.value = value;
+    element.dispatchEvent(new Event("input", { bubbles: true }));
     return value;
   }
 
-  if (el.isContentEditable) {
-    value = el.innerText;
-    value = value.replace(COMMAND_REGEX, "").trimEnd();
-    el.textContent = value;
+  if (element.isContentEditable) {
+    value = element.innerText;
+    value = value.replace(TRANSLATION_COMMAND_PATTERN, "").trimEnd();
+    element.textContent = value;
     return value;
   }
 
   return "";
 }
 
-function showToast(text) {
+function showToast(message) {
   const host = document.createElement("div");
-  host.style.position = "fixed";
-  host.style.left = "50%";
-  host.style.bottom = "16px";
-  host.style.transform = "translateX(-50%)";
-  host.style.fontSize = "12px";
-  host.style.padding = "8px 12px";
-  host.style.pointerEvents = "none";
-  host.textContent = text;
-  applyCommonStyles(host);
+  host.className = "bt-toast";
+  host.textContent = message;
   document.documentElement.appendChild(host);
-  setTimeout(() => host.remove(), 1800);
+  setTimeout(() => host.remove(), 2400);
 }
 
-function attachAutoDetector() {
-  document.addEventListener("input", onUserInput, true);
-  document.addEventListener("blur", onUserInput, true);
+function registerAutoDetection() {
+  document.addEventListener("input", handleUserInputEvent, true);
+  document.addEventListener("blur", handleUserInputEvent, true);
 }
 
-function onUserInput() {
-  const el = getActiveEditable();
-
-  if (!el) return;
-
+function handleUserInputEvent() {
+  const element = getActiveEditableElement();
+  if (!element) return;
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => tryTriggerTranslation(el), 500);
+  debounceTimer = setTimeout(() => attemptTranslationTrigger(element), 600);
 }
 
-function tryTriggerTranslation(el) {
+function attemptTranslationTrigger(element) {
   if (isTranslating) return;
-
-  const parsed = getFieldTextAndCommand(el);
-
+  const parsed = parseFieldTextAndCommand(element);
   if (!parsed) return;
-
-  handleTranslateAuto(el, parsed);
+  handleAutoTranslation(element, parsed);
 }
 
-async function handleTranslateAuto(el, parsed) {
+async function handleAutoTranslation(element, parsed) {
   isTranslating = true;
 
   try {
@@ -338,20 +275,17 @@ async function handleTranslateAuto(el, parsed) {
     const targetCode = normalizeLanguageToCode(parsed.languageRaw);
 
     if (!baseText || !baseText.trim()) return;
-
     if (!targetCode) {
       showToast("Invalid language");
       return;
     }
 
     const settings = await getSettings();
-    const cleanSourceValue = removeCommandSuffix(el);
-
-    const ui = buildModalUi();
-    ui.original.textContent = cleanSourceValue;
-    ui.translated.textContent = "";
-    ui.showLoading(true);
-
+    const cleanSourceValue = removeTranslationCommandSuffix(element);
+    const dialog = buildConfirmationDialog();
+    dialog.sourceText.textContent = cleanSourceValue;
+    dialog.translatedText.textContent = "";
+    dialog.setLoadingVisible(true);
     const res = await requestTranslation({
       text: cleanSourceValue,
       nativeLanguageCode: settings.nativeLanguageCode || "pt",
@@ -360,28 +294,28 @@ async function handleTranslateAuto(el, parsed) {
     });
 
     if (!res || !res.ok) {
-      ui.destroy();
+      dialog.destroy();
       showToast(res && res.error ? String(res.error) : "Translation failed");
       return;
     }
 
-    const translated =
+    const translation =
       res.result && res.result.translation ? res.result.translation : "";
-    ui.translated.textContent = translated;
-    ui.showLoading(false);
+    dialog.translatedText.textContent = translation;
+    dialog.setLoadingVisible(false);
 
     function confirm() {
-      setFieldText(el, translated);
-      ui.destroy();
+      setFieldText(element, translation);
+      dialog.destroy();
     }
 
     function cancel() {
-      ui.destroy();
+      dialog.destroy();
     }
 
-    ui.confirmBtn.addEventListener("click", confirm);
-    ui.cancelBtn.addEventListener("click", cancel);
-    ui.shadowRoot.addEventListener("keydown", (ev) => {
+    dialog.confirmButton.addEventListener("click", confirm);
+    dialog.cancelButton.addEventListener("click", cancel);
+    dialog.shadowRoot.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter") confirm();
       if (ev.key === "Escape") cancel();
     });

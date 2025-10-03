@@ -52,16 +52,16 @@ function renderHistory(items) {
 
   if (!Array.isArray(items) || items.length === 0) {
     historyEl.innerHTML =
-      "<div class='item'><p>🙈 No translations yet.</p></div>";
+      "<div class='bt-item'><p>🙈 No translations yet.</p></div>";
     return;
   }
 
   for (const it of items) {
     const div = document.createElement("div");
-    div.className = "item";
+    div.className = "bt-item";
 
     const meta = document.createElement("p");
-    meta.className = "meta";
+    meta.className = "bt-meta";
 
     const left = document.createElement("span");
     left.textContent = `${it.sourceLanguage} → ${it.targetLanguage}`;
@@ -72,10 +72,10 @@ function renderHistory(items) {
     meta.appendChild(right);
 
     const translation = document.createElement("p");
-    translation.className = "translation";
+    translation.className = "bt-translation";
 
     const original = document.createElement("span");
-    original.className = "text";
+    original.className = "bt-text";
     original.textContent = it.originalText;
 
     const arrow = document.createElement("span");

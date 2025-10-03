@@ -1,6 +1,6 @@
 {
   "name": "Bridge Translate",
-  "description": "🌍 Chrome extension for instant AI-powered translation on input.",
+  "description": "🌁 Chrome extension for instant AI-powered translation on input.",
   "version": "1.0.0",
   "manifest_version": 3,
   "action": {
@@ -26,7 +26,8 @@
       "resources": [
         "common/language-map.js",
         "offscreen/index.html",
-        "offscreen/index.js"
+        "offscreen/index.js",
+        "styles/*.css"
       ],
       "matches": ["<all_urls>"]
     }
