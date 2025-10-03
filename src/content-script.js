@@ -15,14 +15,14 @@ const commonStyles = {
 };
 
 (async function bootstrap() {
-  const mod = await import(chrome.runtime.getURL("common/language-map.js"));
+  const mod = await import(chrome.runtime.getURL("src/common/language-map.js"));
   normalizeLanguageToCode = mod.normalizeLanguageToCode;
   injectGlobalStylesheet();
   registerAutoDetection();
 })();
 
 function injectGlobalStylesheet() {
-  const href = chrome.runtime.getURL("styles/dialogs.css");
+  const href = chrome.runtime.getURL("assets/styles/dialogs.css");
   if (![...document.styleSheets].some((s) => s.href === href)) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -116,7 +116,7 @@ function createOverlayShadowHost() {
 }
 
 function attachStylesheetToShadowRoot(shadowRoot) {
-  const href = chrome.runtime.getURL("styles/dialogs.css");
+  const href = chrome.runtime.getURL("assets/styles/dialogs.css");
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = href;

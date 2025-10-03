@@ -14,3 +14,6 @@ Thumbs.db
 *.swp
 *.bak
 *.tmp
+
+# Environment files
+package-lock.json

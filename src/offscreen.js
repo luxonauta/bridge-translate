@@ -1,4 +1,4 @@
-import { normalizeLanguageToCode } from "../common/language-map.js";
+import { normalizeLanguageToCode } from "./common/language-map.js";
 
 let detector;
 

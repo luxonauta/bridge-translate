@@ -211,7 +211,10 @@ input[type="text"] {
       gap: calc(var(--bt-space-small) - 0.125rem);
       color: var(--bt-color-text-muted);
       font-size: var(--bt-font-size-code);
+      line-height: 1;
       font-family: monospace, sans-serif;
+      font-variant-numeric: tabular-nums;
+      vertical-align: middle;
 
       span {
         &:first-child {

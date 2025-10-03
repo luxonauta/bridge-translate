@@ -1,4 +1,4 @@
-const OFFSCREEN_URL = chrome.runtime.getURL("offscreen/index.html");
+const OFFSCREEN_URL = chrome.runtime.getURL("../pages/offscreen.html");
 const HISTORY_KEY = "translationHistory";
 const SETTINGS_KEY = "translatorSettings";
 
@@ -11,7 +11,7 @@ async function ensureOffscreen() {
 
   if (!hasOffscreen) {
     await chrome.offscreen.createDocument({
-      url: "offscreen/index.html",
+      url: "../pages/offscreen.html",
       reasons: ["IFRAME_SCRIPTING"],
       justification:
         "Use built-in Translator and LanguageDetector APIs in a windowed context."

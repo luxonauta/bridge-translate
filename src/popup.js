@@ -1,4 +1,4 @@
-import { normalizeLanguageToCode } from "../common/language-map.js";
+import { normalizeLanguageToCode } from "./common/language-map.js";
 
 const nativeInput = document.querySelector("#native");
 const preferNative = document.querySelector("#prefer-native");
@@ -75,7 +75,6 @@ function renderHistory(items) {
     translation.className = "bt-translation";
 
     const original = document.createElement("span");
-    original.className = "bt-text";
     original.textContent = it.originalText;
 
     const arrow = document.createElement("span");
