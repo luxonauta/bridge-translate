@@ -52,7 +52,7 @@ function isEditableElement(element) {
 
 function getDeepActiveElement(root = document) {
   let element = root.activeElement || null;
-  while (element && element.shadowRoot && element.shadowRoot.activeElement) {
+  while (element?.shadowRoot?.activeElement) {
     element = element.shadowRoot.activeElement;
   }
   return element;
@@ -295,12 +295,11 @@ async function handleAutoTranslation(element, parsed) {
 
     if (!res || !res.ok) {
       dialog.destroy();
-      showToast(res && res.error ? String(res.error) : "Translation failed");
+      showToast(res?.error ? String(res.error) : "Translation failed");
       return;
     }
 
-    const translation =
-      res.result && res.result.translation ? res.result.translation : "";
+    const translation = res.result?.translation ? res.result.translation : "";
     dialog.translatedText.textContent = translation;
     dialog.setLoadingVisible(false);
 

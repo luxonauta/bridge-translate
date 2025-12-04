@@ -18,8 +18,7 @@ async function loadSettings() {
   if (res?.ok) {
     nativeInput.value = res.settings.nativeLanguageCode || "pt";
     preferNative.checked = res.settings.preferNativeAsSource !== false;
-    confirmModal.checked =
-      res.settings.showConfirmModal !== false ? true : false;
+    confirmModal.checked = res.settings.showConfirmModal !== false;
   } else {
     nativeInput.value = "pt";
     preferNative.checked = true;
@@ -43,7 +42,9 @@ async function saveSettings() {
 
   if (res?.ok) {
     saveBtn.textContent = "✅ Saved";
-    setTimeout(() => (saveBtn.textContent = "Save preferences"), 1800);
+    setTimeout(() => {
+      saveBtn.textContent = "Save preferences";
+    }, 1800);
   }
 }
 
